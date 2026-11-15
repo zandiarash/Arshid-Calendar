@@ -101,14 +101,19 @@ Both exes are self-contained and share a single .NET runtime in the package root
    ./scripts/Publish.ps1 -Store      # → artifacts/<version>/Store/ArshidCalendar_<version>.msixbundle (x64 + ARM64, unsigned)
    ```
    The Store signs the package itself, so no certificate is needed.
-4. **Optional: test it locally** with the Windows App Certification Kit (`appcertui.exe`, from the Windows SDK) against the `.msixbundle`.
-5. **Create the submission:**
+4. **Test it locally** with the Windows App Certification Kit, which runs the same checks as Partner Center:
+   ```powershell
+   ./scripts/Test-StorePackage.ps1   # asks for admin rights; writes artifacts/<version>/Store/wack-report.xml
+   ```
+5. **Create the submission.** All the text and answers are ready in [`store/listing.md`](store/listing.md), and the images are in [`store/images/`](store/images/):
    - *Packages*: upload the `.msixbundle`.
-   - *Properties*: category **Productivity**. The app collects no personal data and makes no network calls; a privacy policy URL is still recommended.
-   - *Restricted capabilities*: Partner Center asks why the package uses `runFullTrust`. Answer: *"Desktop (WPF) application and Windows 11 Widgets Board provider (out-of-process COM server); full trust is required for Win32 desktop apps."*
-   - *Store listing* (Persian, fa-IR, which is the package language): description, at least one screenshot (1366×768 or larger; `ArshidCalendar.exe --snapshot out.png [--dark|--light]` and the `--preview` images help), and a 300×300 store logo.
+   - *Properties*: category **Productivity**. The privacy policy URL points to [`PRIVACY.md`](PRIVACY.md).
+   - *Restricted capabilities*: the `runFullTrust` justification.
+   - *Store listing* (Persian, fa-IR, which is the package language; English optional): description, features, keywords, the 1920×1080 screenshots and the logos.
    - *Pricing and availability*: choose markets.
-   - *Age rating*: fill in the IARC questionnaire (the app has no user content or network features).
+   - *Age rating*: the IARC questionnaire (all "No").
+
+Store images are regenerated with `dotnet run tools/generate-assets.cs -- .`. The screenshots are built from the `docs/*.png` snapshots.
 
 ## Direct distribution (outside the Store)
 
@@ -156,7 +161,9 @@ src/
     Com/ClassFactory.cs             ← [GeneratedComInterface] class factory
 tests/ArshidCalendar.Core.Tests/   ← MSTest 4
 tools/generate-assets.cs            ← file-based app: regenerates icons and images
-scripts/                            ← install / uninstall the dev package, Publish.ps1 (-Store)
+scripts/                            ← install / uninstall the dev package, Publish.ps1 (-Store), Test-StorePackage.ps1 (WACK)
+store/                              ← Partner Center listing text (listing.md) and Store images
+PRIVACY.md                          ← privacy policy (linked from the Store listing)
 ```
 
 ## Modern .NET and C# features used

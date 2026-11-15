@@ -63,6 +63,21 @@ foreach (var size in new[] { 16, 20, 24, 30, 32, 36, 40, 48, 60, 64, 72, 80, 96,
 //   ArshidCalendar.WidgetProvider.exe --preview <folder>   → large-dark.png / large-light.png
 _ = seasons;
 
+// ---------- Microsoft Store listing images (uploaded in Partner Center, not part of the package) ----------
+// Logos: 300×300 app tile icon, 1080×1080 / 2160×2160 1:1 box art.
+// Screenshots: Partner Center needs ≥ 1366×768; these are 1920×1080 compositions of the docs/ snapshots
+// (refresh those first with `ArshidCalendar.exe --snapshot …` / `ArshidCalendar.WidgetProvider.exe --preview …`).
+var storeImages = Path.Combine(root, "store", "images");
+Directory.CreateDirectory(storeImages);
+SavePng(Icon(300), Path.Combine(storeImages, "logo-300x300.png"));
+SavePng(BoxArt(1080), Path.Combine(storeImages, "boxart-1080x1080.png"));
+SavePng(BoxArt(2160), Path.Combine(storeImages, "boxart-2160x2160.png"));
+var docs = Path.Combine(root, "docs");
+SavePng(Showcase(1920, 1080, seasons[3], Path.Combine(docs, "desktop-dark.png"), Path.Combine(docs, "desktop-light.png")),
+    Path.Combine(storeImages, "screenshot-1-desktop.png"));
+SavePng(Showcase(1920, 1080, seasons[0], Path.Combine(docs, "widget-board-dark.png"), Path.Combine(docs, "widget-board.png")),
+    Path.Combine(storeImages, "screenshot-2-widgets-board.png"));
+
 Console.WriteLine("Assets generated under " + root);
 
 // =====================================================================
@@ -114,6 +129,43 @@ Bitmap Banner(int w, int h)
     Hq(g);
     using var icon = Icon((int)(h * 0.62f));
     g.DrawImage(icon, (w - icon.Width) / 2f, (h - icon.Height) / 2f);
+    return bmp;
+}
+
+Bitmap BoxArt(int size)
+{
+    var bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+    using var g = Graphics.FromImage(bmp);
+    Hq(g);
+    using (var bg = new LinearGradientBrush(new Rectangle(0, 0, size, size), Color.FromArgb(0x1E, 0x1B, 0x4B), Color.FromArgb(0x4C, 0x1D, 0x95), 45f))
+        g.FillRectangle(bg, 0, 0, size, size);
+    using var icon = Icon((int)(size * 0.62f));
+    g.DrawImage(icon, (size - icon.Width) / 2f, (size - icon.Height) / 2f);
+    return bmp;
+}
+
+// Snapshots side by side on a seasonal gradient (a stand-in for a desktop wallpaper).
+static Bitmap Showcase(int w, int h, (Color A, Color B) season, params string[] shots)
+{
+    var bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+    using var g = Graphics.FromImage(bmp);
+    Hq(g);
+    using (var bg = new LinearGradientBrush(new Rectangle(0, 0, w, h), season.A, season.B, 35f))
+        g.FillRectangle(bg, 0, 0, w, h);
+    var images = shots.Select(p => Image.FromFile(p)).ToArray();
+    try
+    {
+        var targetH = h * 0.88f;
+        var gap = w * 0.05f;
+        var sizes = images.Select(i => new SizeF(i.Width * targetH / i.Height, targetH)).ToArray();
+        var x = (w - sizes.Sum(s => s.Width) - gap * (images.Length - 1)) / 2f;
+        for (var i = 0; i < images.Length; i++)
+        {
+            g.DrawImage(images[i], x, (h - targetH) / 2f, sizes[i].Width, sizes[i].Height);
+            x += sizes[i].Width + gap;
+        }
+    }
+    finally { foreach (var i in images) i.Dispose(); }
     return bmp;
 }
 

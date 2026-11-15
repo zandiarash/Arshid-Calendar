@@ -80,7 +80,7 @@ public sealed class ThemeService
     public static void ApplyHeroSeason(Season season, bool translucent)
     {
         var (from, to) = SeasonColors[(int)season];
-        byte alpha = translucent ? (byte)0xD0 : (byte)0xFF;
+        var alpha = translucent ? (byte)0xD0 : (byte)0xFF;
         Application.Current.Resources["HeroBrush"] = Gradient(WithAlpha(from, alpha), WithAlpha(to, alpha));
     }
 
