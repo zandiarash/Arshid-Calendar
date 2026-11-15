@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Windows 11 Widgets Board provider (Adaptive Cards) AND the MSIX packaging project.
+    A packaged (MSIX) out-of-process COM server, activated on demand by the Widgets host.
+    The package also carries the desktop widget (ArshidCalendar.exe, see the ProjectReference
+    below), so one Microsoft Store package installs both.
+    Deploy with scripts/Install-WidgetProvider.ps1 (or F5 in Visual Studio); Store upload: scripts/Publish.ps1 -Store.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
+    <RootNamespace>ArshidCalendar.WidgetProvider</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
+    <PackageArch Condition="'$(Platform)' == 'ARM64'">arm64</PackageArch>
+    <PackageArch Condition="'$(PackageArch)' == ''">x64</PackageArch>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-$(PackageArch)</RuntimeIdentifier>
+    <!-- The Store can't install the .NET runtime for users, so the package carries it -->
+    <SelfContained>true</SelfContained>
+    <!-- The desktop exe reference below IS built self-contained (AdditionalProperties); the SDK's check
+         only looks at the referenced project's defaults (NETSDK1150). -->
+    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- WPF renders the card visuals with the Vazirmatn font (the Widgets host only has its system font) -->
+    <UseWPF>true</UseWPF>
+
+    <!-- Single-project MSIX packaging -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <GenerateAppInstallerFile>false</GenerateAppInstallerFile>
+    <AppxBundle>Never</AppxBundle>
+    <DefaultLanguage>fa-IR</DefaultLanguage>
+    <!-- Widgets don't need the Main/Singleton runtime packages; skip the DeploymentManager auto-initializer -->
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Public\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\ArshidCalendar.Desktop\Assets\Fonts\*.ttf" Link="Fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="Templates\*.json" LogicalName="Templates.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArshidCalendar.Core\ArshidCalendar.Core.csproj" />
+    <!-- The desktop widget ships in the same package (Application Id="Desktop"). Both exes are self-contained
+         for the same RID, so they share one copy of the .NET runtime in the package root. -->
+    <ProjectReference Include="..\ArshidCalendar.Desktop\ArshidCalendar.Desktop.csproj"
+                      AdditionalProperties="RuntimeIdentifier=$(RuntimeIdentifier);SelfContained=true" />
+  </ItemGroup>
+
+  <!-- Keep the MSIX identity and version in sync with Directory.Build.props
+       (AppVersion, PackageIdentityName, PackagePublisher, PackagePublisherDisplayName).
+       The manifest is only rewritten when a value actually differs. -->
+  <PropertyGroup>
+    <_AppxNs>&lt;Namespace Prefix='m' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;</_AppxNs>
+  </PropertyGroup>
+  <ItemGroup>
+    <_ManifestField Include="Version" Query="/m:Package/m:Identity/@Version" Value="$(AppVersion)" />
+    <_ManifestField Include="Name" Query="/m:Package/m:Identity/@Name" Value="$(PackageIdentityName)" />
+    <_ManifestField Include="Publisher" Query="/m:Package/m:Identity/@Publisher" Value="$(PackagePublisher)" />
+    <_ManifestField Include="PublisherDisplayName" Query="/m:Package/m:Properties/m:PublisherDisplayName/text()" Value="$(PackagePublisherDisplayName)" />
+  </ItemGroup>
+  <Target Name="SyncPackageManifestIdentity" BeforeTargets="BeforeBuild" Outputs="%(_ManifestField.Identity)">
+    <XmlPeek XmlInputPath="Package.appxmanifest" Query="%(_ManifestField.Query)" Namespaces="$(_AppxNs)">
+      <Output TaskParameter="Result" PropertyName="_ManifestValue" />
+    </XmlPeek>
+    <XmlPoke Condition="'$(_ManifestValue)' != '%(_ManifestField.Value)'" XmlInputPath="Package.appxmanifest"
+             Query="%(_ManifestField.Query)" Value="%(_ManifestField.Value)" Namespaces="$(_AppxNs)" />
+    <Message Condition="'$(_ManifestValue)' != '%(_ManifestField.Value)'" Importance="high"
+             Text="Package.appxmanifest %(_ManifestField.Identity): $(_ManifestValue) → %(_ManifestField.Value)" />
+  </Target>
+
+  <!-- Lets Visual Studio deploy/debug the package with F5 -->
+  <ItemGroup Condition="'$(EnableMsixTooling)' == 'true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+</Project>

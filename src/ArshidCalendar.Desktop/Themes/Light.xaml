@@ -1,0 +1,48 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Frosted mode -->
+    <SolidColorBrush x:Key="WindowTintBrush" Color="#C8FBFBFE" />
+    <!-- Normal mode: solid, opaque background -->
+    <SolidColorBrush x:Key="SolidBackgroundBrush" Color="#F4F4F8" />
+    <SolidColorBrush x:Key="SolidSurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SolidSurfaceStrokeBrush" Color="#14000000" />
+    <!-- Glass mode: milky tint over the blurred desktop -->
+    <SolidColorBrush x:Key="GlassTintBrush" Color="#38FFFFFF" />
+    <LinearGradientBrush x:Key="GlassSheenBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="#70FFFFFF" />
+        <GradientStop Offset="0.4" Color="#14FFFFFF" />
+        <GradientStop Offset="1" Color="#00FFFFFF" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="GlassEdgeBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Offset="0" Color="#E0FFFFFF" />
+        <GradientStop Offset="1" Color="#50FFFFFF" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#40FFFFFF" />
+    <SolidColorBrush x:Key="SurfaceStrokeBrush" Color="#90FFFFFF" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#15151F" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4A4A62" />
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#7C7C94" />
+    <SolidColorBrush x:Key="HolidayBrush" Color="#E11D48" />
+    <SolidColorBrush x:Key="HolidaySoftBrush" Color="#1AE11D48" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#0E000000" />
+    <SolidColorBrush x:Key="PressedBrush" Color="#08000000" />
+    <SolidColorBrush x:Key="DividerBrush" Color="#10000000" />
+    <SolidColorBrush x:Key="MenuBackgroundBrush" Color="#FAFFFFFF" />
+    <SolidColorBrush x:Key="MenuBorderBrush" Color="#16000000" />
+    <Color x:Key="ShadowColor">#55557A</Color>
+    <!-- Taskbar flyout: Windows 11 Fluent values over the transient acrylic backdrop -->
+    <SolidColorBrush x:Key="FlyoutTintBrush" Color="#33F9F9F9" />
+    <SolidColorBrush x:Key="FlyoutTextBrush" Color="#E4000000" />
+    <SolidColorBrush x:Key="FlyoutTextSecondaryBrush" Color="#9E000000" />
+    <SolidColorBrush x:Key="FlyoutTextDisabledBrush" Color="#5C000000" />
+    <SolidColorBrush x:Key="FlyoutHolidayBrush" Color="#C42B1C" />
+    <SolidColorBrush x:Key="FlyoutDividerBrush" Color="#14000000" />
+    <SolidColorBrush x:Key="FlyoutButtonBrush" Color="#B3FFFFFF" />
+    <SolidColorBrush x:Key="FlyoutButtonHoverBrush" Color="#80F9F9F9" />
+    <SolidColorBrush x:Key="FlyoutButtonStrokeBrush" Color="#0F000000" />
+    <SolidColorBrush x:Key="FlyoutHoverBrush" Color="#0F000000" />
+    <SolidColorBrush x:Key="FlyoutPressedBrush" Color="#08000000" />
+    <!-- Text on the (dark) accent colour in light mode -->
+    <SolidColorBrush x:Key="SystemAccentForegroundBrush" Color="#FFFFFF" />
+    <Color x:Key="FlyoutSnapshotColor">#EEEEEE</Color>
+</ResourceDictionary>

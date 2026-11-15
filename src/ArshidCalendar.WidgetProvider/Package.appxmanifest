@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One MSIX for the Microsoft Store (and sideloading) that contains both apps:
+    • Desktop  – the WPF desktop widget + tray calendar (ArshidCalendar.exe). Listed first, so it's
+                 what Start and the Store's "Launch" button open.
+    • App      – the Windows 11 Widgets Board provider (out-of-process COM server, no Start entry).
+  Identity Name / Publisher / PublisherDisplayName and Version are written at build time from
+  Directory.Build.props (PackageIdentityName, PackagePublisher, PackagePublisherDisplayName, AppVersion).
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 uap5 com rescap">
+
+  <Identity Name="ArshidCalendar" Publisher="CN=ArshidCalendar" Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>تقویم آرشید</DisplayName>
+    <PublisherDisplayName>Arshid Calendar</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <!-- Third-party Widgets Board providers need Windows 11 22H2 (22621) or later -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22621.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+
+  <Applications>
+    <!-- ===== Desktop widget (visible in Start) ===== -->
+    <Application Id="Desktop" Executable="ArshidCalendar.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="تقویم آرشید" Description="ویجت تقویم آرشید برای ویندوز ۱۱"
+                          BackgroundColor="transparent"
+                          Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" ShortName="تقویم آرشید">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <!-- "Start with Windows" (StartupService). Off until the user turns it on; Windows also lists it in
+             Settings → Apps → Startup. -->
+        <uap5:Extension Category="windows.startupTask" Executable="ArshidCalendar.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap5:StartupTask TaskId="ArshidCalendarStartup" Enabled="false" DisplayName="تقویم آرشید" />
+        </uap5:Extension>
+      </Extensions>
+    </Application>
+
+    <!-- ===== Windows 11 Widgets Board provider (no Start entry) ===== -->
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="$targetentrypoint$">
+      <uap:VisualElements DisplayName="تقویم آرشید" Description="ویجت تقویم آرشید برای ویندوز ۱۱"
+                          BackgroundColor="transparent" AppListEntry="none"
+                          Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <!-- Out-of-process COM server the Widgets host activates -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="ArshidCalendar.WidgetProvider.exe" Arguments="-RegisterProcessAsComServer" DisplayName="Arshid Calendar Widget Provider">
+              <com:Class Id="2F6C8ED1-5E7A-4EF8-8DC4-763D4888664D" DisplayName="Arshid Calendar Widget Provider" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+
+        <!-- Widget registration -->
+        <uap3:Extension Category="windows.appExtension">
+          <uap3:AppExtension Name="com.microsoft.windows.widgets" DisplayName="تقویم آرشید" Id="ArshidCalendarWidgets" PublicFolder="Public">
+            <uap3:Properties>
+              <WidgetProvider>
+                <ProviderIcons>
+                  <Icon Path="Assets\WidgetIcon.png" />
+                </ProviderIcons>
+                <Activation>
+                  <CreateInstance ClassId="2F6C8ED1-5E7A-4EF8-8DC4-763D4888664D" />
+                </Activation>
+                <Definitions>
+                  <Definition Id="ArshidCalendar"
+                              DisplayName="تقویم آرشید"
+                              Description="تاریخ و ساعت، روزهای هفته و تقویم ماه شمسی همراه با مناسبت‌ها"
+                              AllowMultiple="true"
+                              IsCustomizable="false">
+                    <Capabilities>
+                      <Capability><Size Name="small" /></Capability>
+                      <Capability><Size Name="medium" /></Capability>
+                      <Capability><Size Name="large" /></Capability>
+                    </Capabilities>
+                    <ThemeResources>
+                      <Icons>
+                        <Icon Path="Assets\WidgetIcon.png" />
+                      </Icons>
+                      <Screenshots>
+                        <Screenshot Path="Assets\ScreenshotDark.png" DisplayAltText="تقویم آرشید" />
+                      </Screenshots>
+                      <DarkMode>
+                        <Screenshots>
+                          <Screenshot Path="Assets\ScreenshotDark.png" DisplayAltText="تقویم آرشید" />
+                        </Screenshots>
+                      </DarkMode>
+                      <LightMode>
+                        <Screenshots>
+                          <Screenshot Path="Assets\ScreenshotLight.png" DisplayAltText="تقویم آرشید" />
+                        </Screenshots>
+                      </LightMode>
+                    </ThemeResources>
+                  </Definition>
+                </Definitions>
+              </WidgetProvider>
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- Both apps are full-trust Win32 (WPF) processes. Partner Center asks why: "Desktop (Win32/WPF) app" -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

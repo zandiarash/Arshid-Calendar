@@ -1,0 +1,27 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "rtl": true,
+  "body": [
+    { "type": "Image", "url": "${hero}", "size": "stretch", "altText": "${alt}" },
+    {
+      "type": "Container",
+      "$data": "${dark}",
+      "$when": "${$host.hostTheme == 'dark'}",
+      "spacing": "small",
+      "items": [
+        { "type": "Image", "url": "${week}", "size": "stretch", "altText": "هفتهٔ جاری" }
+      ]
+    },
+    {
+      "type": "Container",
+      "$data": "${light}",
+      "$when": "${$host.hostTheme != 'dark'}",
+      "spacing": "small",
+      "items": [
+        { "type": "Image", "url": "${week}", "size": "stretch", "altText": "هفتهٔ جاری" }
+      ]
+    }
+  ]
+}

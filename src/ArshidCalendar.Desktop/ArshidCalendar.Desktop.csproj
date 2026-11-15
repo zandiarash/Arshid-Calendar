@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows SDK projection (same version as the widget provider: both exes share one folder in the MSIX)
+         for Windows.ApplicationModel.StartupTask when running packaged. -->
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <!-- Restored for these RIDs so the MSIX project can build it self-contained for x64 / ARM64 -->
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWPF>true</UseWPF>
+    <!-- Only used for the notification-area (tray) icon -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WPF reads per-monitor DPI awareness from app.manifest; the WinForms analyzer (tray icon only) doesn't apply -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+    <AssemblyName>ArshidCalendar</AssemblyName>
+    <RootNamespace>ArshidCalendar.Desktop</RootNamespace>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Avoid WPF / WinForms type-name clashes (Application, Color, Brush …) -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Fonts\*.ttf" />
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ArshidCalendar.Core\ArshidCalendar.Core.csproj" />
+  </ItemGroup>
+
+</Project>

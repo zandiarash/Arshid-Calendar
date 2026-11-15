@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ArshidCalendar.Core/ArshidCalendar.Core.csproj" />
+    <Project Path="src/ArshidCalendar.Desktop/ArshidCalendar.Desktop.csproj" />
+    <Project Path="src/ArshidCalendar.WidgetProvider/ArshidCalendar.WidgetProvider.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ArshidCalendar.Core.Tests/ArshidCalendar.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+</Solution>

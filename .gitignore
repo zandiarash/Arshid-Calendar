@@ -1,0 +1,8 @@
+Setup/
+bin/
+obj/
+.vs/
+*.user
+AppPackages/
+*.pfx
+artifacts/

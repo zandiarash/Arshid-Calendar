@@ -1,0 +1,369 @@
+<Window x:Class="ArshidCalendar.Desktop.CalendarFlyout"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ArshidCalendar.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="تقویم آرشید"
+        Width="344" SizeToContent="Height"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
+        Background="Transparent"
+        FontFamily="{StaticResource VazirFont}"
+        Foreground="{DynamicResource FlyoutTextBrush}"
+        FlowDirection="RightToLeft"
+        UseLayoutRounding="True"
+        TextOptions.TextRenderingMode="ClearType">
+
+    <!-- Client area covers the whole window; DWM paints the Windows 11 transient-window acrylic behind it -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="-1" ResizeBorderThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Transparent button with a subtle hover (title, carets, header date) -->
+        <Style x:Key="FlatButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource FlyoutTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="8,0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="4" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource FlyoutHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource FlyoutPressedBrush}" />
+                                <Setter Property="Opacity" Value="0.8" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource FlyoutTextBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ▲ ▼ month carets -->
+        <Style x:Key="CaretButtonStyle" TargetType="Button" BasedOn="{StaticResource FlatButtonStyle}">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+            <Setter Property="FontSize" Value="8" />
+            <Setter Property="Foreground" Value="{DynamicResource FlyoutTextSecondaryBrush}" />
+        </Style>
+
+        <!-- Standard Fluent button: light fill + hairline border (collapse chevron, footer actions) -->
+        <Style x:Key="StandardButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource FlyoutTextBrush}" />
+            <Setter Property="Background" Value="{DynamicResource FlyoutButtonBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource FlyoutButtonStrokeBrush}" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" CornerRadius="4" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource FlyoutButtonHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.75" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Round day cell: hover circle, accent ring when selected, accent disc for today -->
+        <Style x:Key="DayButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource FlyoutTextBrush}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="ToolTip" Value="{Binding ToolTip}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Width="40" Height="40" Background="Transparent">
+                            <Ellipse x:Name="Disc" Fill="Transparent" />
+                            <Ellipse x:Name="Ring" Stroke="Transparent" StrokeThickness="1.5" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Disc" Property="Fill" Value="{DynamicResource FlyoutHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Disc" Property="Fill" Value="{DynamicResource FlyoutPressedBrush}" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemAccentBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsTodayInMonth}" Value="True">
+                                <Setter TargetName="Disc" Property="Fill" Value="{DynamicResource SystemAccentBrush}" />
+                            </DataTrigger>
+                            <!-- Today + selected: a thin inner ring on the accent disc, like the native calendar -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsTodayInMonth}" Value="True" />
+                                    <Condition Binding="{Binding IsSelected}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemAccentForegroundBrush}" />
+                                <Setter TargetName="Ring" Property="StrokeThickness" Value="1" />
+                                <Setter TargetName="Ring" Property="Margin" Value="2" />
+                            </MultiDataTrigger>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsTodayInMonth}" Value="True" />
+                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="Disc" Property="Opacity" Value="0.9" />
+                            </MultiDataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsHoliday}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource FlyoutHolidayBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsInMonth}" Value="False">
+                    <Setter Property="Foreground" Value="{DynamicResource FlyoutTextDisabledBrush}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsTodayInMonth}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemAccentForegroundBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Round month cell in the year view -->
+        <Style x:Key="MonthButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource FlyoutTextBrush}" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Width="68" Height="68" Background="Transparent">
+                            <Ellipse x:Name="Disc" Fill="Transparent" />
+                            <Ellipse x:Name="Ring" Stroke="Transparent" StrokeThickness="1.5" />
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Disc" Property="Fill" Value="{DynamicResource FlyoutHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Disc" Property="Fill" Value="{DynamicResource FlyoutPressedBrush}" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsDisplayed}" Value="True">
+                                <Setter TargetName="Ring" Property="Stroke" Value="{DynamicResource SystemAccentBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsCurrent}" Value="True">
+                                <Setter TargetName="Disc" Property="Fill" Value="{DynamicResource SystemAccentBrush}" />
+                                <Setter TargetName="Ring" Property="Stroke" Value="Transparent" />
+                                <Setter Property="Foreground" Value="{DynamicResource SystemAccentForegroundBrush}" />
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="Root" Background="{DynamicResource FlyoutTintBrush}" ClipToBounds="True">
+        <StackPanel x:Name="Body">
+            <StackPanel.RenderTransform>
+                <TranslateTransform x:Name="BodyTranslate" />
+            </StackPanel.RenderTransform>
+
+            <!-- ================= Date header + collapse chevron ================= -->
+            <Grid Height="52" Margin="8,0,12,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Button Style="{StaticResource FlatButtonStyle}" Height="32" Click="Header_Click" ToolTip="امروز (Home)">
+                    <TextBlock Text="{Binding TodayHeader}" FontSize="14" />
+                </Button>
+                <Button x:Name="CollapseButton" Grid.Column="2" Style="{StaticResource StandardButtonStyle}"
+                        Width="32" Height="30" Padding="0" Click="CollapseButton_Click">
+                    <TextBlock x:Name="CollapseGlyph" Text="&#xE70D;" FontFamily="{StaticResource IconFont}" FontSize="12" />
+                </Button>
+            </Grid>
+
+            <!-- ================= Calendar (folds away with the chevron) ================= -->
+            <StackPanel x:Name="CalendarPanel">
+                <Border Height="1" Background="{DynamicResource FlyoutDividerBrush}" />
+
+                <!-- Month title + ▲ / ▼ -->
+                <Grid Margin="8,10,10,2" Height="36">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="TitleButton" Style="{StaticResource FlatButtonStyle}" Height="32" Click="Title_Click">
+                        <TextBlock x:Name="TitleText" FontSize="15" FontWeight="Bold" />
+                    </Button>
+                    <Button Grid.Column="2" x:Name="UpButton" Style="{StaticResource CaretButtonStyle}" Content="&#xEDDB;" Click="Up_Click" />
+                    <Button Grid.Column="3" x:Name="DownButton" Style="{StaticResource CaretButtonStyle}" Content="&#xEDDC;" Click="Down_Click" />
+                </Grid>
+
+                <!-- Day view and year (months) view share one fixed-height host -->
+                <Grid x:Name="ViewsHost" Margin="6,0,6,6" Background="Transparent" ClipToBounds="True"
+                      MouseWheel="ViewsHost_MouseWheel" RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="ViewsScale" />
+                            <TranslateTransform x:Name="ViewsTranslate" />
+                        </TransformGroup>
+                    </Grid.RenderTransform>
+
+                    <StackPanel x:Name="DaysView">
+                        <ItemsControl ItemsSource="{Binding WeekDayHeaders}" Height="36">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="7" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock x:Name="H" Text="{Binding}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               FontSize="13.5" FontWeight="Bold" />
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding}" Value="ج">
+                                            <Setter TargetName="H" Property="Foreground" Value="{DynamicResource FlyoutHolidayBrush}" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl x:Name="DaysList" ItemsSource="{Binding Days}" Height="264">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="7" Rows="6" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:DayCellViewModel}">
+                                    <Button Style="{StaticResource DayButtonStyle}"
+                                            Command="{Binding DataContext.SelectDayCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}">
+                                        <Grid Width="40" Height="40">
+                                            <TextBlock Text="{Binding Number}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,0,0" />
+                                            <Ellipse x:Name="Dot" Width="4" Height="4" VerticalAlignment="Bottom" Margin="0,0,0,5"
+                                                     Fill="{DynamicResource SystemAccentBrush}"
+                                                     Visibility="{Binding HasEvents, Converter={StaticResource BoolToVisibility}}" />
+                                        </Grid>
+                                    </Button>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsHoliday}" Value="True">
+                                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource FlyoutHolidayBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsInMonth}" Value="False">
+                                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource FlyoutTextDisabledBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsTodayInMonth}" Value="True">
+                                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource SystemAccentForegroundBrush}" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <ItemsControl x:Name="MonthsList" Visibility="Collapsed">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="4" Rows="3" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type vm:MonthCell}">
+                                <Button Style="{StaticResource MonthButtonStyle}" Click="Month_Click">
+                                    <TextBlock Text="{Binding Name}" />
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <!-- ================= Selected day ================= -->
+                <Border Height="1" Background="{DynamicResource FlyoutDividerBrush}" />
+                <Grid Margin="16,10,12,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock FontSize="13" TextTrimming="CharacterEllipsis">
+                            <Run Text="{Binding SelectedTitle, Mode=OneWay}" FontWeight="Bold" />
+                            <Run Text="·" Foreground="{DynamicResource FlyoutTextSecondaryBrush}" />
+                            <Run Text="{Binding SelectedRelative, Mode=OneWay}" Foreground="{DynamicResource FlyoutTextSecondaryBrush}" />
+                        </TextBlock>
+                        <TextBlock Text="{Binding SelectedGregorian}" FontFamily="{StaticResource LatinFont}" FontSize="12"
+                                   Foreground="{DynamicResource FlyoutTextSecondaryBrush}"
+                                   FlowDirection="LeftToRight" HorizontalAlignment="Left" Margin="0,2,0,0" />
+                        <TextBlock Text="{Binding SelectedHijri}" FontSize="12" Foreground="{DynamicResource FlyoutTextSecondaryBrush}" />
+                        <ItemsControl ItemsSource="{Binding SelectedEvents}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:EventItem}">
+                                    <Grid Margin="0,5,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse x:Name="Dot" Width="6" Height="6" Margin="0,7,0,0" VerticalAlignment="Top"
+                                                 Fill="{DynamicResource SystemAccentBrush}" />
+                                        <TextBlock x:Name="T" Grid.Column="1" Text="{Binding Title}" FontSize="12.5" Margin="8,0,0,0" TextWrapping="Wrap" />
+                                    </Grid>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsHoliday}" Value="True">
+                                            <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource FlyoutHolidayBrush}" />
+                                            <Setter TargetName="T" Property="Foreground" Value="{DynamicResource FlyoutHolidayBrush}" />
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Top" Margin="8,0,0,0">
+                        <Button Style="{StaticResource StandardButtonStyle}" Click="OpenWidget_Click" ToolTip="نمایش ویجت کامل تقویم">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8A7;" FontFamily="{StaticResource IconFont}" FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="ویجت" Margin="7,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Style="{StaticResource StandardButtonStyle}" Content="امروز" Margin="0,6,0,0"
+                                Command="{Binding GoToTodayCommand}" ToolTip="بازگشت به امروز (Home)"
+                                Visibility="{Binding IsAwayFromToday, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
