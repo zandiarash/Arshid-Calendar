@@ -64,17 +64,20 @@
     <_AppxNs>&lt;Namespace Prefix='m' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;</_AppxNs>
   </PropertyGroup>
   <ItemGroup>
-    <_ManifestField Include="Version" Query="/m:Package/m:Identity/@Version" Value="$(AppVersion)" />
-    <_ManifestField Include="Name" Query="/m:Package/m:Identity/@Name" Value="$(PackageIdentityName)" />
-    <_ManifestField Include="Publisher" Query="/m:Package/m:Identity/@Publisher" Value="$(PackagePublisher)" />
-    <_ManifestField Include="PublisherDisplayName" Query="/m:Package/m:Properties/m:PublisherDisplayName/text()" Value="$(PackagePublisherDisplayName)" />
+    <!-- Query reads the current value; PokeQuery writes it. They differ for element text: XmlPoke can't write
+         a text() node, so it writes the element itself. -->
+    <_ManifestField Include="Version" Query="/m:Package/m:Identity/@Version" PokeQuery="/m:Package/m:Identity/@Version" Value="$(AppVersion)" />
+    <_ManifestField Include="Name" Query="/m:Package/m:Identity/@Name" PokeQuery="/m:Package/m:Identity/@Name" Value="$(PackageIdentityName)" />
+    <_ManifestField Include="Publisher" Query="/m:Package/m:Identity/@Publisher" PokeQuery="/m:Package/m:Identity/@Publisher" Value="$(PackagePublisher)" />
+    <_ManifestField Include="PublisherDisplayName" Query="/m:Package/m:Properties/m:PublisherDisplayName/text()"
+                    PokeQuery="/m:Package/m:Properties/m:PublisherDisplayName" Value="$(PackagePublisherDisplayName)" />
   </ItemGroup>
   <Target Name="SyncPackageManifestIdentity" BeforeTargets="BeforeBuild" Outputs="%(_ManifestField.Identity)">
     <XmlPeek XmlInputPath="Package.appxmanifest" Query="%(_ManifestField.Query)" Namespaces="$(_AppxNs)">
       <Output TaskParameter="Result" PropertyName="_ManifestValue" />
     </XmlPeek>
     <XmlPoke Condition="'$(_ManifestValue)' != '%(_ManifestField.Value)'" XmlInputPath="Package.appxmanifest"
-             Query="%(_ManifestField.Query)" Value="%(_ManifestField.Value)" Namespaces="$(_AppxNs)" />
+             Query="%(_ManifestField.PokeQuery)" Value="%(_ManifestField.Value)" Namespaces="$(_AppxNs)" />
     <Message Condition="'$(_ManifestValue)' != '%(_ManifestField.Value)'" Importance="high"
              Text="Package.appxmanifest %(_ManifestField.Identity): $(_ManifestValue) → %(_ManifestField.Value)" />
   </Target>

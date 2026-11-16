@@ -201,7 +201,8 @@ public partial class MainWindow : Window
             Opacity = 0.55,
             FlowDirection = FlowDirection.RightToLeft,
         });
-        menu.Items.Add(Item("ارتباط با توسعه دهنده", "", false, () => app.OpenUrl("https://github.com/zandiarash/Arshid-Calendar")));
+        menu.Items.Add(Item("سورس پروژه در گیت هاب", GitHubIcon(), false, () => app.OpenUrl("https://github.com/zandiarash/Arshid-Calendar")));
+        menu.Items.Add(Item("آرش زندی ZandiArash@Hotmail.com", "", false, () => app.MailTo("ZandiArash@Hotmail.com"))); // Fluent "Mail"
         menu.Items.Add(new Separator());
 
         menu.Items.Add(Item("چسبیده به دسکتاپ", "", _settings.Layer == WindowLayer.Desktop, () => app.SetLayer(WindowLayer.Desktop)));
@@ -223,13 +224,41 @@ public partial class MainWindow : Window
         menu.Items.Add(Item("خروج", "", false, app.ExitApp));
 
 
-        static MenuItem Item(string header, string glyph, bool isChecked, Action action)
+        // icon: a Segoe Fluent Icons glyph (string) or any element (e.g. GitHubIcon()).
+        static MenuItem Item(string header, object icon, bool isChecked, Action action)
         {
-            var item = new MenuItem { Header = header, Icon = new TextBlock { Text = glyph }, IsChecked = isChecked };
+            var item = new MenuItem
+            {
+                Header = header,
+                Icon = icon as UIElement ?? new TextBlock { Text = (string)icon },
+                IsChecked = isChecked,
+            };
             item.Click += (_, _) => action();
             return item;
         }
     }
+
+    /// <summary>GitHub mark (Octicons "mark-github", MIT) sized like a 14px Fluent glyph, in the menu item's text colour.</summary>
+    private static Viewbox GitHubIcon()
+    {
+        var path = new System.Windows.Shapes.Path { Data = GitHubMark };
+        path.SetBinding(System.Windows.Shapes.Shape.FillProperty, new System.Windows.Data.Binding(nameof(Foreground))
+        {
+            RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.FindAncestor, typeof(MenuItem), 1),
+        });
+        // A logo must not be mirrored by the right-to-left menu.
+        return new Viewbox { Width = 14, Height = 14, Child = path, FlowDirection = FlowDirection.LeftToRight, HorizontalAlignment = HorizontalAlignment.Left };
+    }
+
+    private static readonly Geometry GitHubMark = Freeze(Geometry.Parse(
+        "M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59 0.4 0.07 0.55-0.17 0.55-0.38 0-0.19-0.01-0.82-0.01-1.49" +
+        "-2.01 0.37-2.53-0.49-2.69-0.94-0.09-0.23-0.48-0.94-0.82-1.13-0.28-0.15-0.68-0.52-0.01-0.53 0.63-0.01 1.08 0.58 1.23 0.82" +
+        " 0.72 1.21 1.87 0.87 2.33 0.66 0.07-0.52 0.28-0.87 0.51-1.07-1.78-0.2-3.64-0.89-3.64-3.95 0-0.87 0.31-1.59 0.82-2.15" +
+        "-0.08-0.2-0.36-1.02 0.08-2.12 0 0 0.67-0.21 2.2 0.82 0.64-0.18 1.32-0.27 2-0.27 0.68 0 1.36 0.09 2 0.27 1.53-1.04 2.2-0.82 2.2-0.82" +
+        " 0.44 1.1 0.16 1.92 0.08 2.12 0.51 0.56 0.82 1.27 0.82 2.15 0 3.07-1.87 3.75-3.65 3.95 0.29 0.25 0.54 0.73 0.54 1.48" +
+        " 0 1.07-0.01 1.93-0.01 2.2 0 0.21 0.15 0.46 0.55 0.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"));
+
+    private static Geometry Freeze(Geometry g) { g.Freeze(); return g; }
 
     // ======================= Visual feedback =======================
 

@@ -24,12 +24,18 @@ public partial class App : Application
     public static new App Current => (App)Application.Current;
 
     /// <summary>Four-part software version (AppVersion in Directory.Build.props), in Persian digits.</summary>
-    public static string Version { get; } =
+    public static string Version
+    {
+        get;
+    } =
         (System.Reflection.CustomAttributeExtensions
             .GetCustomAttribute<System.Reflection.AssemblyFileVersionAttribute>(typeof(App).Assembly)?.Version ?? "0.0.0.0")
         .ToPersianDigits();
 
-    public bool IsExiting { get; private set; }
+    public bool IsExiting
+    {
+        get; private set;
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -196,6 +202,37 @@ public partial class App : Application
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
             ShowLinkError(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Starts a new email to <paramref name="email"/> (a bare address or a <c>mailto:</c> link) in the default
+    /// mail app (Outlook, Windows Mail, …). If no mail app is set up, composes it on Outlook.com in the browser.
+    /// </summary>
+    internal void MailTo(string email)
+    {
+        var address = email.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) ? email["mailto:".Length..] : email;
+        // Accept a single plain address only, so nothing else (extra recipients, headers, paths) reaches the shell.
+        if (!System.Net.Mail.MailAddress.TryCreate(address, out var parsed) || parsed.Address != address.Trim())
+        {
+            ShowLinkError("آدرس ایمیل نامعتبر است.");
+            return;
+        }
+
+        var to = Uri.EscapeDataString(parsed.Address);
+        var subject = Uri.EscapeDataString($"تقویم آرشید {Version}");
+        try
+        {
+            using var _ = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = $"mailto:{to}?subject={subject}",
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            // No app is registered for mailto: → Outlook.com's compose page.
+            OpenUrl($"https://outlook.live.com/mail/0/deeplink/compose?to={to}&subject={subject}");
         }
     }
 

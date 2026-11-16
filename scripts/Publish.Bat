@@ -1,0 +1,1 @@
+./Publish.ps1 -Store *>&1 | Select-String -Pattern 'error|✔|Upload' | Select-Object -Unique

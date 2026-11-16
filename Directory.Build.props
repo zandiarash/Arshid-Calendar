@@ -18,9 +18,9 @@
        builds with a certificate whose subject equals PackagePublisher.
        ================================================================ -->
   <PropertyGroup>
-    <PackageIdentityName>ArshidCalendar</PackageIdentityName>
-    <PackagePublisher>CN=ArshidCalendar</PackagePublisher>
-    <PackagePublisherDisplayName>Arshid Calendar</PackagePublisherDisplayName>
+    <PackageIdentityName>TheArshid.ArshidPersianCalendar</PackageIdentityName>
+    <PackagePublisher>CN=5ECE9267-F38D-47B8-B443-80AB1E5461F7</PackagePublisher>
+    <PackagePublisherDisplayName>TheArshid</PackagePublisherDisplayName>
   </PropertyGroup>
 
   <!-- Derived version properties (do not edit) -->
