@@ -172,4 +172,46 @@ public partial class App : Application
         _instanceMutex?.Dispose();
         base.OnExit(e);
     }
+
+    /// <summary>Opens a web link in the user's default browser. Only absolute http/https URLs are accepted.</summary>
+    internal void OpenUrl(string url)
+    {
+        // Never hand arbitrary strings to the shell: it would happily launch executables or file paths.
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
+        {
+            ShowLinkError("آدرس نامعتبر است.");
+            return;
+        }
+
+        try
+        {
+            // UseShellExecute routes the URL to the default browser; the returned handle (often null) is disposed right away.
+            using var _ = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = uri.AbsoluteUri,
+                UseShellExecute = true,
+            });
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            ShowLinkError(ex.Message);
+        }
+    }
+
+    private void ShowLinkError(string detail)
+    {
+        var owner = _window is { IsVisible: true } ? _window : null;
+        const string message = "خطا در باز کردن لینک:\n";
+        const MessageBoxOptions rtl = MessageBoxOptions.RtlReading | MessageBoxOptions.RightAlign;
+        if (owner is null)
+        {
+            MessageBox.Show(message + detail, "خطا", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, rtl);
+        }
+        else
+        {
+            MessageBox.Show(owner, message + detail, "خطا", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, rtl);
+        }
+    }
+
 }

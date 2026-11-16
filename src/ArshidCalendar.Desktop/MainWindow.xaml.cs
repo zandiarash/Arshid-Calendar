@@ -192,6 +192,18 @@ public partial class MainWindow : Window
         var app = App.Current;
         menu.Items.Clear();
 
+        menu.Items.Add(new MenuItem
+        {
+            Header = $"تقویم آرشید نسخهٔ {App.Version}",
+            Icon = new TextBlock { Text = "" },
+            IsHitTestVisible = false,
+            Focusable = false,
+            Opacity = 0.55,
+            FlowDirection = FlowDirection.RightToLeft,
+        });
+        menu.Items.Add(Item("ارتباط با توسعه دهنده", "", false, () => app.OpenUrl("https://github.com/zandiarash/Arshid-Calendar")));
+        menu.Items.Add(new Separator());
+
         menu.Items.Add(Item("چسبیده به دسکتاپ", "", _settings.Layer == WindowLayer.Desktop, () => app.SetLayer(WindowLayer.Desktop)));
         menu.Items.Add(Item("همیشه روی پنجره‌ها", "", _settings.Layer == WindowLayer.Topmost, () => app.SetLayer(WindowLayer.Topmost)));
         menu.Items.Add(Item("پنجرهٔ معمولی", "", _settings.Layer == WindowLayer.Normal, () => app.SetLayer(WindowLayer.Normal)));
@@ -209,16 +221,7 @@ public partial class MainWindow : Window
         menu.Items.Add(new Separator());
         menu.Items.Add(Item("پنهان کردن", "", false, Hide));
         menu.Items.Add(Item("خروج", "", false, app.ExitApp));
-        menu.Items.Add(new Separator());
-        menu.Items.Add(new MenuItem
-        {
-            Header = $"نسخهٔ {App.Version}",
-            Icon = new TextBlock { Text = "" },
-            IsHitTestVisible = false,
-            Focusable = false,
-            Opacity = 0.55,
-            FlowDirection = FlowDirection.RightToLeft,
-        });
+
 
         static MenuItem Item(string header, string glyph, bool isChecked, Action action)
         {
