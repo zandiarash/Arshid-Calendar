@@ -8,7 +8,7 @@
   Directory.Build.props (PackageIdentityName, PackagePublisher, PackagePublisherDisplayName, AppVersion).
 -->
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap uap3 uap5 com rescap">
-  <Identity Name="TheArshid.ArshidPersianCalendar" Publisher="CN=5ECE9267-F38D-47B8-B443-80AB1E5461F7" Version="1.0.0.0" />
+  <Identity Name="TheArshid.ArshidPersianCalendar" Publisher="CN=5ECE9267-F38D-47B8-B443-80AB1E5461F7" Version="1.0.2.0" />
   <Properties>
     <DisplayName>Arshid Persian Calendar</DisplayName>
     <PublisherDisplayName>TheArshid</PublisherDisplayName>

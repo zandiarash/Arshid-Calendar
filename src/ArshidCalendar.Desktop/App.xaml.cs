@@ -48,8 +48,13 @@ public partial class App : Application
             return;
         }
         _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSignalName);
+        // A second launch (e.g. from Start) shows the widget, or the taskbar calendar while the widget is hidden for good.
         ThreadPool.RegisterWaitForSingleObject(_showSignal,
-            (_, _) => Dispatcher.BeginInvoke(() => _window?.ShowWidget()), null, Timeout.Infinite, executeOnlyOnce: false);
+            (_, _) => Dispatcher.BeginInvoke(() =>
+            {
+                if (_settings.Current.WidgetHidden) _flyout?.ShowFlyout();
+                else _window?.ShowWidget();
+            }), null, Timeout.Infinite, executeOnlyOnce: false);
 
         base.OnStartup(e);
 
@@ -68,11 +73,16 @@ public partial class App : Application
         // Taskbar calendar flyout: its own view model, so browsing months there doesn't move the widget.
         _flyoutVm = new MainViewModel(TimeProvider.System, settings.HijriAdjustment);
         _flyout = new CalendarFlyout(_flyoutVm, settings, _theme);
-        _flyout.OpenWidgetRequested += () => _window.ShowWidget();
+        // The flyout's «ویجت» button is an explicit request for the widget, so it also ends "hidden for good".
+        _flyout.OpenWidgetRequested += ShowWidgetAgain;
 
         _tray = new TrayIconService();
         _tray.LeftClick += ToggleFlyout;
-        _tray.RightClick += () => { _window.ShowWidget(); _window.ShowMenuAtCursor(); };
+        _tray.RightClick += () =>
+        {
+            if (!_settings.Current.WidgetHidden) _window.ShowWidget();
+            _window.ShowMenuAtCursor();
+        };
         UpdateTray();
         _tray.Show();
         _vm.PropertyChanged += (_, args) =>
@@ -80,7 +90,8 @@ public partial class App : Application
             if (args.PropertyName == nameof(MainViewModel.TodayDay)) UpdateTray();
         };
 
-        _window.Show();
+        var snapshot = e.Args is ["--snapshot", ..];
+        if (!settings.WidgetHidden || snapshot) _window.Show();
 
         // `ArshidCalendar.exe --snapshot out.png [--dark|--light] [--glass|--normal] [--flyout]` renders a PNG and exits
         // (the flags only affect the snapshot; saved settings are left alone).
@@ -120,6 +131,25 @@ public partial class App : Application
         if (_window is null) return;
         if (_window.IsVisible) _window.Hide();
         else _window.ShowWidget();
+    }
+
+    /// <summary>«پنهان برای همیشه»: hide the desktop widget and keep it hidden after restarts (tray + Widgets Board stay).</summary>
+    public void HideWidgetForever()
+    {
+        _settings.Current.WidgetHidden = true;
+        _window?.Hide();
+        SaveSettings();
+    }
+
+    /// <summary>«نمایش ویجت»: bring the desktop widget back (ends "hidden for good").</summary>
+    public void ShowWidgetAgain()
+    {
+        if (_settings.Current.WidgetHidden)
+        {
+            _settings.Current.WidgetHidden = false;
+            SaveSettings();
+        }
+        _window?.ShowWidget();
     }
 
     public void SetLayer(WindowLayer layer)

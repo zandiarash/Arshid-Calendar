@@ -139,6 +139,10 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool DestroyIcon(nint hIcon);
 
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetForegroundWindow(nint hwnd);
+
     public static void SetDwm(nint hwnd, DwmWindowAttribute attribute, int value) =>
         _ = DwmSetWindowAttribute(hwnd, attribute, value, sizeof(int));
 }

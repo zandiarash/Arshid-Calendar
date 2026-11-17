@@ -37,6 +37,10 @@ public partial class MainWindow : Window
 
         ContextMenu = new ContextMenu();
         ContextMenuOpening += (_, _) => BuildMenu(ContextMenu);
+        // A closed ContextMenu isn't part of the window's tree, so WPF doesn't refresh its {DynamicResource}
+        // brushes when the palette is swapped: the menu kept the old theme's background while the items (rebuilt
+        // on every open) got the new text colour. A fresh menu resolves everything from the current theme.
+        theme.ThemeChanged += () => ContextMenu = new ContextMenu();
 
         SourceInitialized += OnSourceInitialized;
         Loaded += (_, _) => { RestorePosition(); PlayEntrance(); };
@@ -185,6 +189,10 @@ public partial class MainWindow : Window
         ContextMenu.PlacementTarget = null;
         ContextMenu.Placement = PlacementMode.MousePoint;
         ContextMenu.IsOpen = true;
+        // Opened from the tray, the app isn't the foreground app (and the widget may be hidden), so the menu
+        // wouldn't close on a click elsewhere. Bring its popup window to the foreground.
+        if (PresentationSource.FromVisual(ContextMenu) is HwndSource popup)
+            SetForegroundWindow(popup.Handle);
     }
 
     private void BuildMenu(ContextMenu menu)
@@ -220,7 +228,16 @@ public partial class MainWindow : Window
         menu.Items.Add(Item("نمایش روز میلادی در جدول", "", _settings.ShowGregorianNumbers, app.ToggleGregorianNumbers));
         menu.Items.Add(Item("اجرا همراه با ویندوز", "", StartupService.IsEnabled, app.ToggleStartup));
         menu.Items.Add(new Separator());
-        menu.Items.Add(Item("پنهان کردن", "", false, Hide));
+        if (_settings.WidgetHidden)
+        {
+            menu.Items.Add(Item("نمایش ویجت دسکتاپ", "", false, app.ShowWidgetAgain)); // Fluent "View"
+        }
+        else
+        {
+            menu.Items.Add(Item("پنهان کردن", "", false, Hide));
+            // Only the tray icon (calendar, this menu) and the Windows 11 Widgets Board stay; survives restarts.
+            menu.Items.Add(Item("پنهان کردن ویجت دسکتاپ برای همیشه", "", false, app.HideWidgetForever)); // Fluent "Hide"
+        }
         menu.Items.Add(Item("خروج", "", false, app.ExitApp));
 
 
@@ -258,7 +275,10 @@ public partial class MainWindow : Window
         " 0.44 1.1 0.16 1.92 0.08 2.12 0.51 0.56 0.82 1.27 0.82 2.15 0 3.07-1.87 3.75-3.65 3.95 0.29 0.25 0.54 0.73 0.54 1.48" +
         " 0 1.07-0.01 1.93-0.01 2.2 0 0.21 0.15 0.46 0.55 0.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"));
 
-    private static Geometry Freeze(Geometry g) { g.Freeze(); return g; }
+    private static Geometry Freeze(Geometry g)
+    {
+        g.Freeze(); return g;
+    }
 
     // ======================= Visual feedback =======================
 

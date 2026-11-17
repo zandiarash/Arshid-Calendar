@@ -61,7 +61,7 @@ In **Visual Studio 2026**, open `ArshidCalendar.slnx`. Set `ArshidCalendar.Widge
 The software version is set in **one place**, `AppVersion` in [`Directory.Build.props`](Directory.Build.props):
 
 ```xml
-<AppVersion>1.0.0.0</AppVersion>   <!-- Major.Minor.Build.Revision, each part 0–65535 -->
+<AppVersion>1.0.2.0</AppVersion>   <!-- Major.Minor.Build.Revision, each part 0–65535 -->
 ```
 
 The following all come from it, so nothing else needs editing:

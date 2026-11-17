@@ -6,7 +6,7 @@
        Each part must be 0–65535 (MSIX / Win32 file-version limits).
        ================================================================ -->
   <PropertyGroup>
-    <AppVersion>1.0.0.0</AppVersion>
+    <AppVersion>1.0.2.0</AppVersion>
   </PropertyGroup>
 
   <!-- ================================================================

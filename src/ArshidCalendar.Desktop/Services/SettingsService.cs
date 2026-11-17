@@ -18,6 +18,11 @@ public sealed class WidgetSettings
     /// <summary>See-through blurred glass (true) or the denser Windows 11 acrylic look (false).</summary>
     public bool Glass { get; set; } = true;
     public bool ShowGregorianNumbers { get; set; } = true;
+    /// <summary>
+    /// «پنهان برای همیشه»: the desktop widget stays hidden, also after restarts. The app keeps running for the
+    /// tray icon (calendar flyout, menu) and the Widgets Board. «نمایش ویجت» in the tray menu brings it back.
+    /// </summary>
+    public bool WidgetHidden { get; set; }
     /// <summary>Taskbar flyout shows only the date header (the calendar is folded away).</summary>
     public bool FlyoutCollapsed { get; set; }
     public int HijriAdjustment { get; set; } = Core.HijriDate.IranAdjustment;
